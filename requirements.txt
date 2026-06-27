@@ -1,0 +1,9 @@
+# Redrob Hackathon — Intelligent Candidate Ranker
+# Requirements (CPU-only, no external APIs)
+
+# Core
+streamlit>=1.35.0
+pandas>=2.0.0
+
+# No other heavy dependencies needed — our ranking is pure Python + heuristics.
+# This keeps the system lightweight, fast, and within the 16GB RAM constraint.

@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+env/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+__MACOSX/
+
+# Data (too large for git)
+\[PUB\] India_runs_data_and_ai_challenge/
+candidates.jsonl
+
+# Temporary files
+*.tmp
+*.log
+jd_text.txt
+spec_text.txt
+redrob_signals.txt
+readme_text.txt

@@ -1,0 +1,79 @@
+# Redrob Hackathon — Submission Metadata
+# Intelligent Candidate Discovery & Ranking Challenge
+
+# ============================================================================
+# Team identity
+# ============================================================================
+team_name: "team_antigravity"
+
+primary_contact:
+  name: "Kaushik"
+  email: "kaushik@example.com"
+  phone: "+91-XXXXXXXXXX"
+
+team_members:
+  - name: "Kaushik"
+    email: "kaushik@example.com"
+    role: "AI Engineer"
+
+# ============================================================================
+# Code and reproducibility
+# ============================================================================
+github_repo: "https://github.com/yerrakaushik/redrob-candidate-ranker"
+
+sandbox_link: "https://huggingface.co/spaces/YOUR_USERNAME/redrob-ranker"
+
+reproduce_command: "python rank.py --candidates ./candidates.jsonl --out ./submission.csv"
+
+# ============================================================================
+# Compute environment
+# ============================================================================
+compute:
+  platform: "Windows PC"
+  cpu_cores: 8
+  ram_gb: 16
+  python_version: "3.13"
+  os: "Windows 11"
+  uses_gpu_for_inference: false
+  has_network_during_ranking: false
+  pre_computation_required: false
+  pre_computation_time_minutes: 0
+
+# ============================================================================
+# AI tools declaration
+# ============================================================================
+ai_tools_used:
+  - "Gemini"
+  - "Antigravity IDE"
+
+ai_usage_summary: |
+  Used Gemini (via Antigravity IDE) for code generation, architectural discussion,
+  and iterative refinement of the scoring heuristics. The ranking logic, scoring
+  weights, and honeypot detection were designed through human engineering judgment.
+  No candidate data was sent to any external LLM during the ranking process.
+
+# ============================================================================
+# Approach summary
+# ============================================================================
+methodology_summary: |
+  Multi-signal hybrid scoring engine with seven weighted dimensions: title fit (20%),
+  skill match quality (25%), career trajectory analysis (20%), experience range (10%),
+  behavioral engagement signals (15%), location fit (5%), and education (5%).
+  
+  Honeypot detection filters ~80 impossible profiles using timeline validation,
+  expert-without-duration checks, and endorsement-trust analysis. Title-first gating
+  prevents keyword-stuffer traps per JD guidance. Behavioral signals (response rate,
+  recency, notice period) act as an availability multiplier. Reasoning is generated
+  deterministically from profile facts with zero hallucination.
+  
+  Runtime: ~45 seconds for 100K candidates on CPU. Memory: <2GB.
+
+# ============================================================================
+# Declarations
+# ============================================================================
+declarations:
+  read_submission_spec: true
+  code_is_original_work: true
+  no_collusion: true
+  honeypot_check_done: true
+  reproduction_tested: true
