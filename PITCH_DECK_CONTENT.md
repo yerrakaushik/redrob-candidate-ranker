@@ -193,7 +193,27 @@ streamlit run app.py
 
 ---
 
-## SLIDE 11: Key Insights
+## SLIDE 11: Evaluation & Scoring Alignment
+
+### Direct Optimization for Hackathon Metrics
+
+Our algorithm's weights and logic are directly aligned with the official grading script:
+
+$$\text{Composite Score} = 0.50 \times \text{NDCG@10} + 0.30 \times \text{NDCG@50} + 0.15 \times \text{MAP} + 0.05 \times \text{P@10}$$
+
+### 🛡️ Disqualification Safeguards
+- **Honeypot Filter (Safeguards NDCG & MAP)**: Since a single honeypot in the top 100 hurts MAP, and more than 10% leads to automatic disqualification, our validation engine intercepts and removes these records before the scorer runs.
+- **Verification**: **0% Honeypot Rate** on the test dataset.
+
+### 🎯 Metric Optimization Strategies
+- **For NDCG@10 (50% Weight)**: High-quality matches are pushed to the absolute top using heavy weights on active/responsive candidates with production system titles and sweet-spot experience.
+- **For MAP (15% Weight)**: Non-technical profiles (Marketing/HR) are capped at $<0.15$ using title gating. This ensures they never contaminate the list, preserving Average Precision.
+- **For P@10 (5% Weight)**: Ensures all top-10 choices are Tier-3+ relevant candidates.
+- **For Tie-Breaking**: Rounded scores are sorted along with ascending Candidate IDs, preventing scoring-order mismatches during automated evaluation.
+
+---
+
+## SLIDE 12: Key Insights
 
 ### What Makes This Different
 
@@ -205,7 +225,7 @@ streamlit run app.py
 
 ---
 
-## SLIDE 12: Thank You
+## SLIDE 13: Thank You
 
 ### 🧠 Intelligent Candidate Ranker
 
