@@ -456,8 +456,6 @@ with tab1:
             import os
             sample_path = os.path.join(
                 os.path.dirname(__file__),
-                "[PUB] India_runs_data_and_ai_challenge",
-                "India_runs_data_and_ai_challenge",
                 "sample_candidates.json"
             )
             if os.path.exists(sample_path):
