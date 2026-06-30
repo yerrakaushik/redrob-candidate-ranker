@@ -124,6 +124,7 @@ st.markdown("""
         padding: 1.5rem;
         text-align: center;
         transition: all 0.3s ease;
+        color: #ffffff;
     }
     .metric-card:hover {
         border-color: rgba(99, 102, 241, 0.5);
@@ -140,7 +141,7 @@ st.markdown("""
     }
     .metric-label {
         font-size: 0.8rem;
-        color: rgba(255,255,255,0.5);
+        color: rgba(255,255,255,0.7);
         margin: 4px 0 0 0;
         text-transform: uppercase;
         letter-spacing: 1px;
@@ -155,6 +156,7 @@ st.markdown("""
         padding: 1.8rem;
         margin-bottom: 1rem;
         transition: all 0.3s ease;
+        color: #e2e8f0;
     }
     .candidate-card:hover {
         border-color: rgba(99, 102, 241, 0.4);
@@ -182,7 +184,7 @@ st.markdown("""
         display: inline;
     }
     .candidate-title {
-        color: rgba(255,255,255,0.5);
+        color: rgba(255,255,255,0.7);
         font-size: 0.9rem;
         margin-top: 4px;
     }
@@ -203,7 +205,7 @@ st.markdown("""
     }
     .score-bar-label {
         font-size: 0.75rem;
-        color: rgba(255,255,255,0.5);
+        color: rgba(255,255,255,0.7);
         margin-bottom: 3px;
         display: flex;
         justify-content: space-between;
@@ -233,11 +235,17 @@ st.markdown("""
     /* ── Sidebar ── */
     section[data-testid="stSidebar"] {
         background: linear-gradient(180deg, #0f0c29 0%, #1a1a2e 100%);
+        color: #e2e8f0 !important;
     }
-    section[data-testid="stSidebar"] .stMarkdown h1,
-    section[data-testid="stSidebar"] .stMarkdown h2,
-    section[data-testid="stSidebar"] .stMarkdown h3 {
-        color: #e2e8f0;
+    section[data-testid="stSidebar"] p, 
+    section[data-testid="stSidebar"] span, 
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] li,
+    section[data-testid="stSidebar"] div,
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3 {
+        color: #e2e8f0 !important;
     }
 
     /* ── Hide streamlit branding ── */
