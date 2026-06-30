@@ -81,7 +81,7 @@ st.markdown("""
     .hero-title {
         font-size: 2.4rem;
         font-weight: 800;
-        color: #ffffff;
+        color: #ffffff !important;
         margin: 0 0 0.5rem 0;
         position: relative;
         z-index: 1;
@@ -89,7 +89,7 @@ st.markdown("""
     }
     .hero-subtitle {
         font-size: 1.1rem;
-        color: rgba(255,255,255,0.7);
+        color: rgba(255,255,255,0.8) !important;
         margin: 0;
         position: relative;
         z-index: 1;
@@ -98,7 +98,7 @@ st.markdown("""
     .hero-badge {
         display: inline-block;
         background: linear-gradient(135deg, #6366f1, #8b5cf6);
-        color: white;
+        color: #ffffff !important;
         padding: 4px 14px;
         border-radius: 20px;
         font-size: 0.75rem;
@@ -357,10 +357,10 @@ if "run_stats" not in st.session_state:
 # ─────────────────────────────────────────────────────────────────────────────
 
 st.markdown("""
-<div class="hero-container">
-    <div class="hero-badge">India Runs · Redrob Hackathon</div>
-    <h1 class="hero-title">🧠 Intelligent Candidate Ranker</h1>
-    <p class="hero-subtitle">
+<div class="hero-container" style="color: #ffffff !important;">
+    <div class="hero-badge" style="color: #ffffff !important;">India Runs · Redrob Hackathon</div>
+    <h1 class="hero-title" style="color: #ffffff !important; margin: 0 0 0.5rem 0; font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px;">🧠 Intelligent Candidate Ranker</h1>
+    <p class="hero-subtitle" style="color: rgba(255, 255, 255, 0.8) !important; font-size: 1.1rem; font-weight: 400;">
         AI-powered candidate ranking that goes beyond keywords — understanding career trajectories, 
         behavioral signals, and genuine role fit to surface the top 100 candidates a recruiter can trust.
     </p>
