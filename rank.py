@@ -277,6 +277,11 @@ def score_title(candidate: dict) -> tuple[float, list[str]]:
         for job in candidate.get("career_history", [])
     ]
     
+    # Gating check: complete non-fits should be caught first
+    if any(bad_title in title for bad_title in NO_FIT_TITLES):
+        notes.append(f"Non-technical role: {candidate['profile']['current_title']}")
+        return 0.0, notes
+    
     # Direct title match
     if title in STRONG_FIT_TITLES:
         notes.append(f"Strong title match: {candidate['profile']['current_title']}")
@@ -308,29 +313,79 @@ def score_title(candidate: dict) -> tuple[float, list[str]]:
         notes.append(f"Previous AI/ML role in career history")
         return 0.5, notes
     
-    if title in NO_FIT_TITLES:
-        notes.append(f"Non-technical role: {candidate['profile']['current_title']}")
-        return 0.0, notes
-    
     # Default for unknown titles
     notes.append(f"Unclear role fit: {candidate['profile']['current_title']}")
     return 0.2, notes
 
 
+# ── Core Job Description text for token-cosine similarity ──
+JD_CORE_TEXT = """
+Senior AI Engineer Founding Team. Python, PyTorch. Production embeddings, retrieval systems, vector database, Pinecone, Weaviate, Qdrant, Milvus, OpenSearch, Elasticsearch, FAISS. Hybrid search, semantic search, information retrieval, search, ranking, recommendation, learning to rank, reranking, BM25, TF-IDF. Evaluation frameworks NDCG, MRR, MAP. Product company experience.
+"""
+
+def normalize_text(text: str) -> str:
+    """Normalize text by removing punctuation, spaces, and hyphens to allow matching synonyms."""
+    if not text:
+        return ""
+    return re.sub(r'[^a-z0-9]', '', text.lower().strip())
+
+
+def calculate_cosine_similarity(text1: str, text2: str) -> float:
+    """Calculate token-based cosine similarity between two texts (pure Python TF-vector cosine)."""
+    if not text1 or not text2:
+        return 0.0
+        
+    words1 = re.findall(r'\b\w+\b', text1.lower())
+    words2 = re.findall(r'\b\w+\b', text2.lower())
+    
+    stop_words = {
+        "and", "the", "in", "of", "to", "for", "with", "a", "an", "is", "on", "at", 
+        "as", "by", "from", "that", "this", "our", "we", "i", "my", "or", "but", "are"
+    }
+    words1 = [w for w in words1 if w not in stop_words]
+    words2 = [w for w in words2 if w not in stop_words]
+    
+    if not words1 or not words2:
+        return 0.0
+        
+    freq1 = {}
+    for w in words1:
+        freq1[w] = freq1.get(w, 0) + 1
+        
+    freq2 = {}
+    for w in words2:
+        freq2[w] = freq2.get(w, 0) + 1
+        
+    all_words = set(freq1.keys()).union(set(freq2.keys()))
+    dot_product = sum(freq1.get(w, 0) * freq2.get(w, 0) for w in all_words)
+    
+    mag1 = math.sqrt(sum(v**2 for v in freq1.values()))
+    mag2 = math.sqrt(sum(v**2 for v in freq2.values()))
+    
+    if mag1 == 0 or mag2 == 0:
+        return 0.0
+        
+    return dot_product / (mag1 * mag2)
+
+
 def score_skills(candidate: dict) -> tuple[float, list[str]]:
-    """Score based on skill match quality. Considers proficiency AND duration."""
+    """
+    Score based on skill match quality.
+    Combines:
+      - 50% Coverage of must-have skills (using normalization check)
+      - 25% Average trust score of matched skills (proficiency, duration, endorsements)
+      - 25% Token-Cosine Similarity between candidate profile text and the Job Description
+    """
     notes = []
     skills = candidate.get("skills", [])
     
-    if not skills:
-        return 0.0, ["No skills listed"]
-    
-    # Build a lookup: skill_name_lower -> skill_obj
+    # 1. Normalize listed skills and build a lookup map
     skill_map = {}
     for s in skills:
-        name = s.get("name", "").lower().strip()
-        skill_map[name] = s
-    
+        norm_name = normalize_text(s.get("name", ""))
+        if norm_name:
+            skill_map[norm_name] = s
+            
     # Also check in summary and career descriptions for implicit skills
     summary = candidate.get("profile", {}).get("summary", "").lower()
     career_text = " ".join(
@@ -338,47 +393,55 @@ def score_skills(candidate: dict) -> tuple[float, list[str]]:
         for job in candidate.get("career_history", [])
     ).lower()
     full_text = summary + " " + career_text
+    norm_full_text = normalize_text(full_text)
     
-    # Score must-have skills
+    # 2. Score must-have skills with normalization check
     must_have_matches = []
     must_have_implicit = []
     
     for skill_name in MUST_HAVE_SKILLS:
-        if skill_name in skill_map:
-            s = skill_map[skill_name]
+        norm_skill = normalize_text(skill_name)
+        if norm_skill in skill_map:
+            s = skill_map[norm_skill]
             prof = s.get("proficiency", "beginner")
             dur = s.get("duration_months", 0)
             endorse = s.get("endorsements", 0)
             
-            # Weight by proficiency and duration (not just presence)
+            # Weight by proficiency and duration
             prof_weight = {"expert": 1.0, "advanced": 0.8, "intermediate": 0.5, "beginner": 0.2}.get(prof, 0.2)
             dur_weight = min(dur / 36.0, 1.0)  # Normalize to 3 years
             trust = prof_weight * 0.5 + dur_weight * 0.3 + min(endorse / 20.0, 1.0) * 0.2
             
             must_have_matches.append((skill_name, trust))
-        elif skill_name in full_text:
+        elif norm_skill in norm_full_text:
             must_have_implicit.append(skill_name)
-    
-    # Score nice-to-have skills
+            
+    # 3. Score nice-to-have skills
     nice_matches = []
     for skill_name in NICE_TO_HAVE_SKILLS:
-        if skill_name in skill_map or skill_name in full_text:
+        norm_skill = normalize_text(skill_name)
+        if norm_skill in skill_map or norm_skill in norm_full_text:
             nice_matches.append(skill_name)
+            
+    # 4. Compute Token-Cosine Similarity against JD
+    cos_sim = calculate_cosine_similarity(full_text, JD_CORE_TEXT)
     
-    # Calculate composite skill score
+    # 5. Calculate composite skill score
     if must_have_matches:
         avg_trust = sum(t for _, t in must_have_matches) / len(must_have_matches)
         coverage = min(len(must_have_matches) / 8.0, 1.0)  # Expect ~8 core skills
-        skill_score = coverage * 0.6 + avg_trust * 0.3
+        # 50% Coverage + 25% Trust + 25% Cosine Similarity
+        skill_score = coverage * 0.5 + avg_trust * 0.25 + cos_sim * 0.25
     else:
-        skill_score = 0.0
-    
+        # If no explicit core skills match, give some credit for semantic career overlap
+        skill_score = cos_sim * 0.3
+        
     # Implicit skill mentions (from summary/career descriptions)
-    implicit_bonus = min(len(must_have_implicit) / 5.0, 1.0) * 0.15
+    implicit_bonus = min(len(must_have_implicit) / 5.0, 1.0) * 0.1
     skill_score += implicit_bonus
     
     # Nice-to-have bonus
-    nice_bonus = min(len(nice_matches) / 5.0, 1.0) * 0.1
+    nice_bonus = min(len(nice_matches) / 5.0, 1.0) * 0.05
     skill_score += nice_bonus
     
     skill_score = min(skill_score, 1.0)
@@ -389,9 +452,8 @@ def score_skills(candidate: dict) -> tuple[float, list[str]]:
         skill_names = [s[0] for s in top_skills]
         notes.append(f"Core skills: {', '.join(skill_names)}")
     if must_have_implicit:
-        notes.append(f"Implicit skills from career: {', '.join(must_have_implicit[:3])}")
-    if not must_have_matches and not must_have_implicit:
-        notes.append("No relevant AI/ML skills found")
+        notes.append(f"Implicit skills: {', '.join(must_have_implicit[:3])}")
+    notes.append(f"Semantic match: {cos_sim:.0%}")
     
     return skill_score, notes
 
